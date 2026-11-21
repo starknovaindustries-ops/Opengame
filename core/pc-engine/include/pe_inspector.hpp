@@ -74,9 +74,44 @@ struct PeExportInspection {
     [[nodiscard]] explicit operator bool() const noexcept { return error == PeExportError::none; }
 };
 
+
+inline constexpr std::size_t pe_max_dependency_images = 16;
+
+struct PeDependencyInput {
+    std::array<char, pe_name_capacity> file_name{};
+    std::span<const std::byte> bytes{};
+};
+enum class PeDependencyError {
+    none, too_many_images, invalid_file_name, invalid_import_image
+};
+enum class PeDependencyStatus {
+    module_not_found, module_found, symbols_resolved, symbols_missing, invalid_module
+};
+struct PeDependencyModule {
+    std::array<char, pe_name_capacity> module_name{};
+    PeDependencyStatus status{PeDependencyStatus::module_not_found};
+    std::size_t imported_symbol_count{0};
+    std::size_t resolved_symbol_count{0};
+    std::size_t missing_symbol_count{0};
+};
+struct PeDependencyImage {
+    std::array<char, pe_name_capacity> file_name{};
+    std::array<PeDependencyModule, pe_max_import_modules> modules{};
+    std::size_t module_count{0};
+};
+struct PeDependencyReport {
+    PeDependencyError error{PeDependencyError::none};
+    std::array<PeDependencyImage, pe_max_dependency_images> images{};
+    std::size_t image_count{0};
+    [[nodiscard]] explicit operator bool() const noexcept { return error == PeDependencyError::none; }
+};
+[[nodiscard]] PeDependencyReport analyze_pe_dependencies(
+    std::span<const PeDependencyInput> images) noexcept;
+
 // Static metadata inspection only. These APIs never load or execute the image.
 [[nodiscard]] PeInspection inspect_pe(std::span<const std::byte> bytes) noexcept;
 [[nodiscard]] PeImportInspection inspect_pe_imports(std::span<const std::byte> bytes) noexcept;
 [[nodiscard]] PeExportInspection inspect_pe_exports(std::span<const std::byte> bytes) noexcept;
+[[nodiscard]] PeDependencyReport analyze_pe_dependencies(std::span<const PeDependencyInput> images) noexcept;
 
 } // namespace opengame::pc

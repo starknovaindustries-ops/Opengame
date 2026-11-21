@@ -15,6 +15,9 @@ void w32(std::vector<std::byte>& b, std::size_t o, std::uint32_t v) {
 void w64(std::vector<std::byte>& b, std::size_t o, std::uint64_t v) {
     for(unsigned i=0;i<8;++i) b[o+i]=static_cast<std::byte>((v>>(i*8))&255U);
 }
+void put(std::vector<std::byte>& b, std::size_t o, const char* s) {
+    for(std::size_t i=0;;++i){ b[o+i]=static_cast<std::byte>(s[i]); if(s[i]=='\\0') break; }
+}
 std::vector<std::byte> make_pe() {
     std::vector<std::byte> b(1024);
     w16(b,0,0x5a4d); w32(b,0x3c,0x80); w32(b,0x80,0x4550);
@@ -24,15 +27,31 @@ std::vector<std::byte> make_pe() {
     const std::size_t sh=0x188;
     w32(b,sh+8,0x200); w32(b,sh+12,0x1000);
     w32(b,sh+16,0x200); w32(b,sh+20,0x200);
-    // Import descriptor, followed by its null terminator.
+    // Import directory fixture.
     w32(b,0x200,0x1060); w32(b,0x20c,0x1040); w32(b,0x210,0x1070);
-    const char dll[]="KERNEL32.dll";
-    for(std::size_t i=0;i<sizeof(dll);++i)b[0x240+i]=static_cast<std::byte>(dll[i]);
+    put(b,0x240,"KERNEL32.dll");
     w64(b,0x260,0x1080); w64(b,0x268,0);
-    w16(b,0x280,0);
-    const char fn[]="CreateFileW";
-    for(std::size_t i=0;i<sizeof(fn);++i)b[0x282+i]=static_cast<std::byte>(fn[i]);
+    w16(b,0x280,0); put(b,0x282,"CreateFileW");
     return b;
+}
+void add_exports(std::vector<std::byte>& b) {
+    // Export directory at RVA 0x1100 -> file offset 0x300.
+    w32(b,0x98+112,0x1100); w32(b,0x98+112+4,0x80);
+    w32(b,0x30c,0x1140); // DLL name
+    w32(b,0x310,1);      // ordinal base
+    w32(b,0x314,2);      // number of functions
+    w32(b,0x318,1);      // number of names
+    w32(b,0x31c,0x1150); // function RVA array
+    w32(b,0x320,0x1158); // name RVA array
+    w32(b,0x324,0x115c); // ordinal array
+    put(b,0x340,"sample.dll");
+    w32(b,0x350,0x1180); // named function
+    w32(b,0x354,0x1170); // forwarder
+    w32(b,0x358,0x1160);
+    w16(b,0x35c,0);
+    put(b,0x360,"OpenGame");
+    put(b,0x370,"OTHER.Func");
+    put(b,0x380,"NamedExport");
 }
 }
 int main() {
@@ -55,5 +74,21 @@ int main() {
     auto truncated=b;
     truncated.resize(0x250);
     assert(inspect_pe_imports(truncated).error!=PeImportError::none);
+
+    auto with_exports=make_pe();
+    add_exports(with_exports);
+    auto exports=inspect_pe_exports(with_exports);
+    assert(exports && exports.symbol_count==2);
+    assert(exports.module_name[0]=='s');
+    assert(exports.symbols[0].has_name);
+    assert(exports.symbols[0].name[0]=='N');
+    assert(exports.symbols[0].ordinal==1);
+    assert(exports.symbols[1].is_forwarder);
+    assert(exports.symbols[1].forwarder[0]=='O');
+    auto bad_exports=with_exports;
+    w32(bad_exports,0x98+112+4,0x7fffffff);
+    assert(inspect_pe_exports(bad_exports).error==PeExportError::invalid_rva);
+    auto no_exports=make_pe();
+    assert(inspect_pe_exports(no_exports).error==PeExportError::no_export_directory);
     return 0;
 }

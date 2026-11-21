@@ -15,7 +15,6 @@ enum class PeError {
     none, too_small, invalid_dos_signature, invalid_pe_offset,
     invalid_pe_signature, invalid_optional_header, invalid_section_table
 };
-
 struct PeImageInfo {
     PeMachine machine{PeMachine::unknown};
     PeFormat format{PeFormat::unknown};
@@ -28,15 +27,19 @@ struct PeInspection {
     PeImageInfo info{};
     [[nodiscard]] explicit operator bool() const noexcept { return error == PeError::none; }
 };
-
 enum class PeImportError {
     none, invalid_image, no_import_directory, invalid_directory,
+    invalid_rva, invalid_string, limit_exceeded
+};
+enum class PeExportError {
+    none, invalid_image, no_export_directory, invalid_directory,
     invalid_rva, invalid_string, limit_exceeded
 };
 
 inline constexpr std::size_t pe_name_capacity = 128;
 inline constexpr std::size_t pe_max_import_modules = 32;
 inline constexpr std::size_t pe_max_symbols_per_module = 64;
+inline constexpr std::size_t pe_max_exports = 128;
 
 struct PeImportedSymbol {
     std::array<char, pe_name_capacity> name{};
@@ -55,8 +58,25 @@ struct PeImportInspection {
     [[nodiscard]] explicit operator bool() const noexcept { return error == PeImportError::none; }
 };
 
-// Static metadata inspection only. Neither API loads or executes the image.
+struct PeExportSymbol {
+    std::array<char, pe_name_capacity> name{};
+    std::array<char, pe_name_capacity> forwarder{};
+    std::uint32_t ordinal{0};
+    std::uint32_t function_rva{0};
+    bool has_name{false};
+    bool is_forwarder{false};
+};
+struct PeExportInspection {
+    PeExportError error{PeExportError::none};
+    std::array<char, pe_name_capacity> module_name{};
+    std::array<PeExportSymbol, pe_max_exports> symbols{};
+    std::size_t symbol_count{0};
+    [[nodiscard]] explicit operator bool() const noexcept { return error == PeExportError::none; }
+};
+
+// Static metadata inspection only. These APIs never load or execute the image.
 [[nodiscard]] PeInspection inspect_pe(std::span<const std::byte> bytes) noexcept;
 [[nodiscard]] PeImportInspection inspect_pe_imports(std::span<const std::byte> bytes) noexcept;
+[[nodiscard]] PeExportInspection inspect_pe_exports(std::span<const std::byte> bytes) noexcept;
 
 } // namespace opengame::pc

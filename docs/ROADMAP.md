@@ -23,9 +23,17 @@
 - [x] Leitura da Import Directory
 - [x] Identificação de módulos/DLLs
 - [x] Símbolos importados por nome e ordinal
-- [x] Mapeamento de RVA para dados brutos de seções
-- [x] Limites para módulos, símbolos e nomes
-- [x] Testes sintéticos para importação válida e dados inválidos
+- [x] Mapeamento de RVA e limites de leitura
+- [x] Testes sintéticos
+
+## 0.2.2 — Exportações PE
+- [x] Leitura da Export Directory
+- [x] Tabela de endereços de funções
+- [x] Associação de nomes a ordinais
+- [x] Exportações apenas por ordinal
+- [x] Identificação de forwarders
+- [x] Validação de RVA, índices e strings
+- [x] Testes sintéticos de exportação e dados inválidos
 - [ ] Validar compilação e testes em ambiente CMake/NDK e Android
 
 ## 0.3 — PS3 Engine (pesquisa)

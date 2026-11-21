@@ -330,4 +330,111 @@ PeExportInspection inspect_pe_exports(std::span<const std::byte> bytes) noexcept
     }
     return result;
 }
+
+namespace {
+[[nodiscard]] unsigned char lower_ascii(char value) noexcept {
+    const auto c = static_cast<unsigned char>(value);
+    return c >= 'A' && c <= 'Z' ? static_cast<unsigned char>(c + ('a' - 'A')) : c;
+}
+[[nodiscard]] bool equal_module_name(const char* a, const char* b) noexcept {
+    if (!a || !b) return false;
+    while (*a && *b) {
+        if (lower_ascii(*a) != lower_ascii(*b)) return false;
+        ++a; ++b;
+    }
+    return *a == '\0' && *b == '\0';
+}
+[[nodiscard]] const char* basename_of(const char* path) noexcept {
+    const char* base = path;
+    for (const char* p = path; *p; ++p)
+        if (*p == '/' || *p == '\\') base = p + 1;
+    return base;
+}
+[[nodiscard]] bool has_export(const PeExportInspection& exports,
+                              const PeImportedSymbol& imported) noexcept {
+    for (std::size_t i = 0; i < exports.symbol_count; ++i) {
+        const auto& symbol = exports.symbols[i];
+        if (imported.by_ordinal) {
+            if (symbol.ordinal == imported.ordinal) return true;
+        } else if (symbol.has_name) {
+            std::size_t j = 0;
+            while (j < pe_name_capacity && imported.name[j] && symbol.name[j] &&
+                   imported.name[j] == symbol.name[j]) ++j;
+            if (j < pe_name_capacity && imported.name[j] == '\0' && symbol.name[j] == '\0')
+                return true;
+        }
+    }
+    return false;
+}
+}
+
+PeDependencyReport analyze_pe_dependencies(std::span<const PeDependencyInput> images) noexcept {
+    PeDependencyReport report{};
+    if (images.size() > pe_max_dependency_images) {
+        report.error = PeDependencyError::too_many_images;
+        return report;
+    }
+    report.image_count = images.size();
+    for (std::size_t i = 0; i < images.size(); ++i) {
+        const auto& input = images[i];
+        if (input.file_name[0] == '\0') {
+            report.error = PeDependencyError::invalid_file_name;
+            report.image_count = 0;
+            return report;
+        }
+        auto& image = report.images[i];
+        image.file_name = input.file_name;
+        const auto imports = inspect_pe_imports(input.bytes);
+        if (imports.error == PeImportError::no_import_directory) continue;
+        if (!imports) {
+            report.error = PeDependencyError::invalid_import_image;
+            report.image_count = 0;
+            return report;
+        }
+        image.module_count = imports.module_count;
+        for (std::size_t m = 0; m < imports.module_count; ++m) {
+            const auto& imported_module = imports.modules[m];
+            auto& module = image.modules[m];
+            module.module_name = imported_module.name;
+            module.imported_symbol_count = imported_module.symbol_count;
+            std::size_t provider = images.size();
+            for (std::size_t p = 0; p < images.size(); ++p) {
+                if (i == p) continue;
+                if (equal_module_name(basename_of(images[p].file_name.data()),
+                                      imported_module.name.data())) {
+                    provider = p;
+                    break;
+                }
+            }
+            if (provider == images.size()) {
+                module.status = PeDependencyStatus::module_not_found;
+                module.missing_symbol_count = imported_module.symbol_count;
+                continue;
+            }
+            const auto exports = inspect_pe_exports(images[provider].bytes);
+            if (!exports && exports.error != PeExportError::no_export_directory) {
+                module.status = PeDependencyStatus::invalid_module;
+                module.missing_symbol_count = imported_module.symbol_count;
+                continue;
+            }
+            if (exports.error == PeExportError::no_export_directory) {
+                module.status = imported_module.symbol_count == 0
+                    ? PeDependencyStatus::module_found : PeDependencyStatus::symbols_missing;
+                module.missing_symbol_count = imported_module.symbol_count;
+                continue;
+            }
+            for (std::size_t symbol = 0; symbol < imported_module.symbol_count; ++symbol) {
+                if (has_export(exports, imported_module.symbols[symbol]))
+                    ++module.resolved_symbol_count;
+                else
+                    ++module.missing_symbol_count;
+            }
+            module.status = module.missing_symbol_count == 0
+                ? PeDependencyStatus::symbols_resolved
+                : PeDependencyStatus::symbols_missing;
+        }
+    }
+    return report;
+}
+
 } // namespace opengame::pc

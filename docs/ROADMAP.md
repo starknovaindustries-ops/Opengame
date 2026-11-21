@@ -36,6 +36,14 @@
 - [x] Testes sintéticos de exportação e dados inválidos
 - [ ] Validar compilação e testes em ambiente CMake/NDK e Android
 
+## 0.2.3 — Análise de dependências PE
+- [x] Mapa estático de DLLs importadas
+- [x] Identificação de módulos fornecidos no conjunto analisado
+- [x] Comparação de símbolos importados por nome ou ordinal
+- [x] Relatório de módulos ausentes, símbolos ausentes e módulos inválidos
+- [x] Limite de 16 imagens por análise
+- [ ] Validar compilação e testes em ambiente CMake/NDK e Android
+
 ## 0.3 — PS3 Engine (pesquisa)
 - [ ] Documentar arquitetura Cell
 - [ ] Prototipar componentes PPU isolados

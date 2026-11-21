@@ -2,7 +2,7 @@
 
 **Opengame** é um projeto experimental da StarkNova Industries para pesquisar e desenvolver uma plataforma Android capaz de hospedar motores de compatibilidade e emulação de sistemas de jogos de PC e PlayStation 3.
 
-> **Estado:** PC Engine 0.2.2 experimental — inspeção estática de metadados, importações e exportações PE. Nenhum jogo de PC ou PS3 é atualmente declarado como compatível ou funcional.
+> **Estado:** PC Engine 0.2.3 experimental — inspeção estática de metadados, importações, exportações e dependências PE. Nenhum jogo de PC ou PS3 é atualmente declarado como compatível ou funcional.
 
 ## Objetivos
 - Criar um aplicativo Android para gerenciar jogos, configurações e sessões.

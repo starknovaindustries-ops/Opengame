@@ -90,5 +90,46 @@ int main() {
     assert(inspect_pe_exports(bad_exports).error==PeExportError::invalid_rva);
     auto no_exports=make_pe();
     assert(inspect_pe_exports(no_exports).error==PeExportError::no_export_directory);
+
+    // Dependency analysis: app.exe imports NamedExport from the supplied sample.dll.
+    auto app_image = make_pe();
+    put(app_image, 0x240, "sample.dll");
+    put(app_image, 0x282, "NamedExport");
+    auto provider_image = make_pe();
+    add_exports(provider_image);
+    PeDependencyInput dependency_inputs[2]{};
+    const char app_name[] = "app.exe";
+    const char dll_name[] = "sample.dll";
+    for (std::size_t i = 0; i < sizeof(app_name); ++i)
+        dependency_inputs[0].file_name[i] = app_name[i];
+    for (std::size_t i = 0; i < sizeof(dll_name); ++i)
+        dependency_inputs[1].file_name[i] = dll_name[i];
+    dependency_inputs[0].bytes = app_image;
+    dependency_inputs[1].bytes = provider_image;
+    const auto dependency_report = analyze_pe_dependencies(dependency_inputs);
+    assert(dependency_report && dependency_report.image_count == 2);
+    assert(dependency_report.images[0].module_count == 1);
+    assert(dependency_report.images[0].modules[0].status == PeDependencyStatus::symbols_resolved);
+    assert(dependency_report.images[0].modules[0].resolved_symbol_count == 1);
+    assert(dependency_report.images[0].modules[0].missing_symbol_count == 0);
+
+    put(app_image, 0x240, "missing.dll");
+    dependency_inputs[0].bytes = app_image;
+    const auto missing_module_report = analyze_pe_dependencies(dependency_inputs);
+    assert(missing_module_report);
+    assert(missing_module_report.images[0].modules[0].status == PeDependencyStatus::module_not_found);
+
+    put(app_image, 0x240, "sample.dll");
+    put(app_image, 0x282, "NoSuchFunc");
+    dependency_inputs[0].bytes = app_image;
+    const auto missing_symbol_report = analyze_pe_dependencies(dependency_inputs);
+    assert(missing_symbol_report);
+    assert(missing_symbol_report.images[0].modules[0].status == PeDependencyStatus::symbols_missing);
+    assert(missing_symbol_report.images[0].modules[0].missing_symbol_count == 1);
+
+    PeDependencyInput too_many[pe_max_dependency_images + 1]{};
+    const auto limit_report = analyze_pe_dependencies(too_many);
+    assert(limit_report.error == PeDependencyError::too_many_images);
+
     return 0;
 }

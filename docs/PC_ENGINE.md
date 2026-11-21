@@ -18,3 +18,7 @@ O parser limita a 128 funções por imagem, valida as tabelas de endereços, nom
 
 ## Segurança e limites
 A inspeção é estática: não carrega DLLs, não resolve símbolos, não executa código e não altera arquivos. Não é um loader PE, ambiente Windows, tradutor de instruções ou emulador. Não há compatibilidade de jogos declarada. Os testes usam imagens PE sintéticas.
+
+## 0.2.3 — Análise de dependências
+A API `analyze_pe_dependencies(images)` recebe até 16 imagens PE nomeadas e correlaciona importações com módulos presentes no mesmo conjunto. O relatório indica módulo ausente, módulo encontrado, símbolos resolvidos, símbolos ausentes ou módulo inválido. A comparação por nome é sensível a maiúsculas/minúsculas apenas para símbolos; nomes de módulos são comparados sem distinção de caixa e usando o nome-base do arquivo.
+A análise não consulta o Windows, não carrega módulos externos, não resolve forwarders e não prova compatibilidade em tempo de execução.

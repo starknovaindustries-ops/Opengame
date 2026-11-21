@@ -8,21 +8,25 @@
 - [ ] Validar compilação em ambiente Android/NDK
 
 ## 0.1.1 — Perfil, configuração e logs
-- [x] Estrutura DeviceProfile
-- [x] Estrutura SessionConfig
-- [x] Callback de logging
+- [x] DeviceProfile, SessionConfig e logging
 - [x] Validação dos parâmetros básicos
 - [x] Impedir que o núcleo simule execução de jogos
 - [ ] Executar testes em ambiente CMake/NDK
 
-## 0.2 — PC Engine (inspeção experimental)
-- [x] Definir escopo inicial x86/x64
+## 0.2 — PC Engine: inspeção PE experimental
 - [x] Parser estático de metadados PE
 - [x] Identificação de máquina e formato PE32/PE32+
-- [x] Validação de limites e rejeição de cabeçalhos inválidos
+- [x] Validação de cabeçalhos e seções
 - [x] Testes com imagens PE sintéticas
-- [ ] Validar compilação e testes no ambiente Android/NDK
-- [ ] Pesquisar APIs e dependências de execução (etapa futura)
+
+## 0.2.1 — Importações PE
+- [x] Leitura da Import Directory
+- [x] Identificação de módulos/DLLs
+- [x] Símbolos importados por nome e ordinal
+- [x] Mapeamento de RVA para dados brutos de seções
+- [x] Limites para módulos, símbolos e nomes
+- [x] Testes sintéticos para importação válida e dados inválidos
+- [ ] Validar compilação e testes em ambiente CMake/NDK e Android
 
 ## 0.3 — PS3 Engine (pesquisa)
 - [ ] Documentar arquitetura Cell

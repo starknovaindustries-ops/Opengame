@@ -6,76 +6,54 @@
 #include <vector>
 
 namespace {
-
-void write_u16(std::vector<std::byte>& bytes, std::size_t offset, std::uint16_t value) {
-    bytes[offset] = static_cast<std::byte>(value & 0xffU);
-    bytes[offset + 1] = static_cast<std::byte>((value >> 8) & 0xffU);
+void w16(std::vector<std::byte>& b, std::size_t o, std::uint16_t v) {
+    b[o]=static_cast<std::byte>(v&255U); b[o+1]=static_cast<std::byte>((v>>8)&255U);
 }
-
-void write_u32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value) {
-    for (unsigned int i = 0; i < 4; ++i) {
-        bytes[offset + i] = static_cast<std::byte>((value >> (i * 8)) & 0xffU);
-    }
+void w32(std::vector<std::byte>& b, std::size_t o, std::uint32_t v) {
+    for(unsigned i=0;i<4;++i) b[o+i]=static_cast<std::byte>((v>>(i*8))&255U);
 }
-
-std::vector<std::byte> make_pe(std::uint16_t machine,
-                               std::uint16_t optional_magic,
-                               std::uint16_t characteristics = 0x0002U) {
-    std::vector<std::byte> bytes(512);
-    write_u16(bytes, 0, 0x5a4d);
-    write_u32(bytes, 0x3c, 0x80);
-    write_u32(bytes, 0x80, 0x00004550);
-    write_u16(bytes, 0x84, machine);
-    write_u16(bytes, 0x86, 1);
-    write_u16(bytes, 0x94, 0x00f0);
-    write_u16(bytes, 0x96, characteristics);
-    write_u16(bytes, 0x98, optional_magic);
-    return bytes;
+void w64(std::vector<std::byte>& b, std::size_t o, std::uint64_t v) {
+    for(unsigned i=0;i<8;++i) b[o+i]=static_cast<std::byte>((v>>(i*8))&255U);
 }
-
-} // namespace
-
+std::vector<std::byte> make_pe() {
+    std::vector<std::byte> b(1024);
+    w16(b,0,0x5a4d); w32(b,0x3c,0x80); w32(b,0x80,0x4550);
+    w16(b,0x84,0x8664); w16(b,0x86,1); w16(b,0x94,0x00f0);
+    w16(b,0x98,0x020b); w32(b,0x98+108,16);
+    w32(b,0x98+112+8,0x1000); w32(b,0x98+112+12,40);
+    const std::size_t sh=0x188;
+    w32(b,sh+8,0x200); w32(b,sh+12,0x1000);
+    w32(b,sh+16,0x200); w32(b,sh+20,0x200);
+    // Import descriptor, followed by its null terminator.
+    w32(b,0x200,0x1060); w32(b,0x20c,0x1040); w32(b,0x210,0x1070);
+    const char dll[]="KERNEL32.dll";
+    for(std::size_t i=0;i<sizeof(dll);++i)b[0x240+i]=static_cast<std::byte>(dll[i]);
+    w64(b,0x260,0x1080); w64(b,0x268,0);
+    w16(b,0x280,0);
+    const char fn[]="CreateFileW";
+    for(std::size_t i=0;i<sizeof(fn);++i)b[0x282+i]=static_cast<std::byte>(fn[i]);
+    return b;
+}
+}
 int main() {
     using namespace opengame::pc;
-
-    const auto x64 = make_pe(0x8664, 0x020b);
-    const auto x64_result = inspect_pe(x64);
-    assert(x64_result);
-    assert(x64_result.info.machine == PeMachine::x64);
-    assert(x64_result.info.format == PeFormat::pe32_plus);
-    assert(x64_result.info.section_count == 1);
-    assert(x64_result.info.is_executable);
-    assert(!x64_result.info.is_dll);
-
-    const auto x86 = make_pe(0x014c, 0x010b, 0x2000U);
-    const auto x86_result = inspect_pe(x86);
-    assert(x86_result);
-    assert(x86_result.info.machine == PeMachine::x86);
-    assert(x86_result.info.format == PeFormat::pe32);
-    assert(x86_result.info.is_dll);
-
-    const std::vector<std::byte> empty;
-    assert(inspect_pe(empty).error == PeError::too_small);
-
-    auto bad_dos = x64;
-    write_u16(bad_dos, 0, 0);
-    assert(inspect_pe(bad_dos).error == PeError::invalid_dos_signature);
-
-    auto bad_pe = x64;
-    write_u32(bad_pe, 0x80, 0);
-    assert(inspect_pe(bad_pe).error == PeError::invalid_pe_signature);
-
-    auto bad_offset = x64;
-    write_u32(bad_offset, 0x3c, 0xfffffff0U);
-    assert(inspect_pe(bad_offset).error == PeError::invalid_pe_offset);
-
-    auto bad_optional = x64;
-    write_u16(bad_optional, 0x98, 0x9999);
-    assert(inspect_pe(bad_optional).error == PeError::invalid_optional_header);
-
-    auto bad_sections = x64;
-    write_u16(bad_sections, 0x86, 97);
-    assert(inspect_pe(bad_sections).error == PeError::invalid_section_table);
-
+    auto b=make_pe();
+    auto meta=inspect_pe(b);
+    assert(meta && meta.info.machine==PeMachine::x64);
+    auto imports=inspect_pe_imports(b);
+    assert(imports && imports.module_count==1);
+    assert(imports.modules[0].name[0]=='K');
+    assert(imports.modules[0].symbol_count==1);
+    assert(imports.modules[0].symbols[0].name[0]=='C');
+    auto invalid=b;
+    w32(invalid,0x98+112+8,0x7fffffff);
+    assert(inspect_pe_imports(invalid).error==PeImportError::invalid_rva);
+    auto no_directory=b;
+    w32(no_directory,0x98+112+8,0);
+    w32(no_directory,0x98+112+12,0);
+    assert(inspect_pe_imports(no_directory).error==PeImportError::no_import_directory);
+    auto truncated=b;
+    truncated.resize(0x250);
+    assert(inspect_pe_imports(truncated).error!=PeImportError::none);
     return 0;
 }

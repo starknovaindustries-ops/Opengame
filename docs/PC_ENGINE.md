@@ -1,16 +1,16 @@
-# PC Engine — etapa 0.2
+# PC Engine — etapas 0.2 e 0.2.1
 
-## Escopo inicial
+## Inspeção básica
+O inspector reconhece assinaturas DOS/PE, máquina (x86, x64, ARM e ARM64), formato PE32/PE32+, quantidade de seções e flags de executável/DLL.
 
-O PC Engine começa com inspeção estática de executáveis no formato Portable Executable (PE), usado por programas Windows. O objetivo desta fase é reconhecer metadados sem carregar nem executar o arquivo.
+## Inspeção estática de importações — 0.2.1
+A API `inspect_pe_imports` lê a Import Directory do Optional Header e identifica:
+- nomes de módulos/DLLs importados;
+- símbolos importados por nome;
+- símbolos importados por ordinal;
+- endereços relativos (RVA) mapeados para dados brutos de seções.
 
-## Dados identificados
-- Assinatura DOS `MZ` e assinatura PE.
-- Campo Machine: x86 (I386), x64 (AMD64), ARM e ARM64.
-- Formato do cabeçalho opcional: PE32 ou PE32+.
-- Quantidade de seções e flags de executável/DLL.
+O parser usa limites fixos: até 32 módulos e 64 símbolos por módulo, com nomes limitados a 127 caracteres mais terminador. RVAs sem correspondência em dados brutos de seção, strings sem terminador e tabelas truncadas são rejeitados.
 
 ## Segurança e limites
-A entrada é tratada como bytes não confiáveis. O parser verifica os limites dos campos, rejeita cabeçalhos truncados e limita a quantidade de seções reconhecida. Ele não executa código nem interpreta conteúdo de seções.
-
-Este protótipo não é um carregador PE, tradutor de instruções, ambiente Windows ou emulador de jogos. Próximas pesquisas podem avaliar metadados adicionais e, separadamente, a viabilidade de uma camada de tradução.
+A entrada é tratada como bytes não confiáveis. A inspeção é somente estática: não carrega DLLs, não resolve símbolos no Windows, não executa código e não altera arquivos. O projeto ainda não implementa um carregador PE, Windows API, DirectX, tradução x86/x64 ou compatibilidade com jogos. Os testes usam apenas imagens PE sintéticas.

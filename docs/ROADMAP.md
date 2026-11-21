@@ -7,6 +7,14 @@
 - [x] Testes básicos do ciclo de vida
 - [ ] Validar compilação em ambiente Android/NDK
 
+## 0.1.1 — Perfil, configuração e logs
+- [x] Estrutura DeviceProfile
+- [x] Estrutura SessionConfig
+- [x] Callback de logging
+- [x] Validação dos parâmetros básicos
+- [x] Impedir que o núcleo simule execução de jogos
+- [ ] Executar testes em ambiente CMake/NDK
+
 ## 0.2 — PC Engine (pesquisa)
 - [ ] Definir escopo x86/x64
 - [ ] Prototipar inspeção de metadados de executáveis

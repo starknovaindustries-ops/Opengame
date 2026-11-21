@@ -1,21 +1,48 @@
-MIT License
+STARKNOVA DIRECT PROTECTION LICENSE
 
-Copyright (c) 2026 starknovaindustries-ops
+SDPL — Version 1.0
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Copyright © 2026 StarkNova Industries. All rights reserved.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Ownership
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+All source code, software architecture, original documentation, components, designs and proprietary materials covered by this license are the exclusive property of StarkNova Industries or their respective identified rights holders.
+
+2. Prohibition of Unauthorized Use
+
+Without prior express written authorization from StarkNova Industries, it is prohibited to:
+
+- Copy or reproduce the source code.
+- Use the source code in other projects.
+- Modify, adapt or create derivative works.
+- Redistribute, publish or sublicense the source code.
+- Sell, commercialize or otherwise exploit the protected code.
+- Reverse engineer or attempt to extract protected source code, except where applicable law expressly permits it.
+
+3. No Permission Granted
+
+Access to this repository, its files or its documentation does not grant any license or permission to use, copy, modify or distribute its protected source code.
+
+4. Authorization
+
+Any exception requires prior written authorization from StarkNova Industries.
+
+5. Intellectual Property
+
+All applicable intellectual property rights remain with their respective legal owners. Nothing in this license transfers ownership to repository users or third parties.
+
+6. Violations
+
+Unauthorized use may result in legal action and other remedies available under applicable law.
+
+7. Applicable Law
+
+This license shall be interpreted in accordance with applicable intellectual property laws and other applicable legislation.
+
+8. Final Provision
+
+By accessing or using materials governed by this license, users acknowledge the restrictions described above, subject to applicable law.
+
+STARKNOVA INDUSTRIES
+Proprietary Software Protection
+STARKNOVA DIRECT PROTECTION LICENSE — SDPL 1.0

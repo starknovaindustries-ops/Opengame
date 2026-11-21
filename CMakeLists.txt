@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(core/opengame-core)
+add_subdirectory(core/pc-engine)
 
 if(OPENGAME_BUILD_TESTS)
     enable_testing()

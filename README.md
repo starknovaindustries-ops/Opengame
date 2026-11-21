@@ -2,7 +2,7 @@
 
 **Opengame** é um projeto experimental da StarkNova Industries para pesquisar e desenvolver uma plataforma Android capaz de hospedar motores de compatibilidade e emulação de sistemas de jogos de PC e PlayStation 3.
 
-> **Estado:** núcleo experimental 0.1.1. Nenhum jogo de PC ou PS3 é atualmente declarado como compatível ou funcional.
+> **Estado:** PC Engine 0.2 experimental — inspeção estática de metadados PE. Nenhum jogo de PC ou PS3 é atualmente declarado como compatível ou funcional.
 
 ## Objetivos
 - Criar um aplicativo Android para gerenciar jogos, configurações e sessões.
@@ -16,7 +16,7 @@
 |---|---|
 | Android App | Interface, biblioteca e configurações |
 | OpenGame Core | Ciclo de vida, perfil do dispositivo, configuração e diagnóstico |
-| PC Engine | Pesquisa de compatibilidade x86/x64 |
+| PC Engine | Inspeção experimental de metadados PE; sem execução |
 | PS3 Engine | Pesquisa de arquitetura Cell, PPU e SPU |
 | Hardware Bridge | Integração com recursos do dispositivo |
 | Native Layer | Componentes nativos em C/C++ |
@@ -28,26 +28,14 @@
 - Vulkan como caminho gráfico preferencial, com alternativas conforme o dispositivo.
 - Oboe/AAudio para pesquisa de áudio de baixa latência.
 
-As tecnologias podem mudar conforme os testes de viabilidade.
-
-## Estrutura planejada
+## Estrutura
 ```text
 Opengame/
 ├── android/app/
 ├── core/
 │   ├── opengame-core/
-│   ├── pc-engine/
-│   ├── ps3-engine/
-│   └── hardware-bridge/
-├── native/
-│   ├── cpu/
-│   ├── gpu/
-│   ├── audio/
-│   └── memory/
+│   └── pc-engine/
 ├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── CORE_API.md
-│   └── ROADMAP.md
 ├── tests/
 ├── CMakeLists.txt
 ├── LICENSE
@@ -55,7 +43,12 @@ Opengame/
 ```
 
 ## Compilação
-A fundação nativa usa CMake e C++20. O aplicativo Android será integrado em uma etapa posterior, quando o esqueleto Gradle estiver definido.
+A fundação nativa usa CMake e C++20. Para compilar e executar os testes localmente:
+```bash
+cmake -S . -B build -DOPENGAME_BUILD_TESTS=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
 ## Aviso sobre jogos e firmware
 O Opengame não distribui jogos comerciais, BIOS, firmware, chaves ou arquivos protegidos de terceiros. O usuário é responsável por utilizar apenas conteúdo que tenha direito legal de usar. A compatibilidade depende de testes em dispositivos reais e pode ser limitada por desempenho, drivers e requisitos técnicos.

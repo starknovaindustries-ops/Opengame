@@ -6,7 +6,7 @@ O Opengame é organizado em um aplicativo Android, um núcleo de orquestração 
 ## Camadas
 - **Android App:** interface Kotlin/Jetpack Compose, biblioteca, configurações, permissões e controles.
 - **OpenGame Core:** ciclo de vida, perfil do dispositivo, configuração de sessão e diagnóstico.
-- **PC Engine (experimental):** pesquisa de compatibilidade x86/x64, tradução de instruções, APIs e chamadas de sistema.
+- **PC Engine (experimental):** inspeção estática de metadados PE nesta primeira etapa; pesquisa futura de tradução x86/x64 e APIs.
 - **PS3 Engine (experimental):** pesquisa da arquitetura Cell, PPU, SPU, memória e serviços do sistema.
 - **Hardware Bridge:** abstração de CPU, GPU, memória, áudio, armazenamento e entrada do Android.
 - **Native Layer:** componentes C/C++ com Android NDK, CMake e JNI quando necessário.
@@ -19,6 +19,7 @@ O Opengame é organizado em um aplicativo Android, um núcleo de orquestração 
 5. Começar com testes unitários e programas próprios.
 6. Não presumir suporte Vulkan/OpenGL: consultar o dispositivo em tempo de execução.
 7. Não marcar uma sessão como executando enquanto não existir um backend real.
+8. Tratar executáveis e arquivos de entrada como dados não confiáveis.
 
 ## Limites
 Emular PS3 é uma tarefa especialmente complexa. Compatibilidade, desempenho e estabilidade dependerão do hardware, dos drivers e da maturidade de cada subsistema.

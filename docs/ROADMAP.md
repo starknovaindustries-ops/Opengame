@@ -15,11 +15,14 @@
 - [x] Impedir que o núcleo simule execução de jogos
 - [ ] Executar testes em ambiente CMake/NDK
 
-## 0.2 — PC Engine (pesquisa)
-- [ ] Definir escopo x86/x64
-- [ ] Prototipar inspeção de metadados de executáveis
-- [ ] Estudar APIs e dependências
-- [ ] Criar testes com programas próprios
+## 0.2 — PC Engine (inspeção experimental)
+- [x] Definir escopo inicial x86/x64
+- [x] Parser estático de metadados PE
+- [x] Identificação de máquina e formato PE32/PE32+
+- [x] Validação de limites e rejeição de cabeçalhos inválidos
+- [x] Testes com imagens PE sintéticas
+- [ ] Validar compilação e testes no ambiente Android/NDK
+- [ ] Pesquisar APIs e dependências de execução (etapa futura)
 
 ## 0.3 — PS3 Engine (pesquisa)
 - [ ] Documentar arquitetura Cell

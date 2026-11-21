@@ -6,6 +6,7 @@ Inspector estático de arquivos Portable Executable (PE).
 - `inspect_pe(bytes)`: metadados básicos do cabeçalho PE.
 - `inspect_pe_imports(bytes)`: módulos/DLLs e símbolos importados.
 - `inspect_pe_exports(bytes)`: funções exportadas, ordinais, nomes e forwarders.
+- `analyze_pe_dependencies(images)`: compara imports com exports entre até 16 imagens fornecidas.
 
 ## Limites
 - Importações: até 32 módulos e 64 símbolos por módulo.
@@ -16,3 +17,6 @@ Inspector estático de arquivos Portable Executable (PE).
 - Nenhuma DLL é carregada; nenhum símbolo é resolvido ou executado.
 
 Não é um loader PE, ambiente Windows ou emulador de jogos. Não declara compatibilidade com jogos comerciais.
+
+## 0.2.3 — Dependências
+O relatório agrupa cada módulo importado e conta símbolos resolvidos/ausentes. A análise é limitada ao conjunto de arquivos recebido; não pesquisa DLLs do sistema e não executa código.
